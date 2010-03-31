@@ -371,6 +371,7 @@ class Spell
         void EffectBind(SpellEffectIndex eff_idx);
         void EffectRestoreItemCharges(SpellEffectIndex eff_idx);
 		void EffectTeachTaxiNode(SpellEffectIndex eff_idx);
+		void EffectSummonPossessed(SpellEffectIndex eff_idx);
 
 
         Spell( Unit* Caster, SpellEntry const *info, bool triggered, ObjectGuid originalCasterGUID = ObjectGuid(), Spell** triggeringContainer = NULL );

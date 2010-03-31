@@ -3924,6 +3924,7 @@ void Aura::HandleModPossess(bool apply, bool Real)
         {
             CreatureInfo const *cinfo = ((Creature*)m_target)->GetCreatureInfo();
             m_target->setFaction(cinfo->faction_A);
+            m_target->GetMap()->CreatureRelocation(((Creature*)m_target), m_target->GetPositionX(), m_target->GetPositionY(), m_target->GetPositionZ(), m_target->GetOrientation());
         }
 
         p_caster->SetCharm(NULL);
@@ -8669,6 +8670,12 @@ void Aura::HandlePhase(bool apply, bool Real)
                 }
             }
         }
+	if(m_target->GetCharm() && !apply)//remove other auras from charm on unapply
+	{
+		Creature * creat=((Creature*)m_target->GetCharm());						
+		creat->GetMap()->CreatureRelocation(creat,m_target->GetPositionX(),m_target->GetPositionY(),m_target->GetPositionZ(),m_target->GetOrientation());
+		creat->RemoveAurasDueToSpellByCancel(GetId());			
+	}
     }
     else
         m_target->SetPhaseMask(apply ? GetMiscValue() : PHASEMASK_NORMAL, false);
