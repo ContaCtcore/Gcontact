@@ -421,7 +421,7 @@ void ChatLog::RaidMsg(Player *player, std::string &msg, uint32 type)
         uint64 gm_leader_GUID = group->GetLeaderGUID();
         Player *gm_member;
 
-        gm_member = sObjectMgrGetPlayer(gm_leader_GUID);
+        gm_member = sObjectMgr.GetPlayer(gm_leader_GUID);
         if (gm_member)
         {
             log_str.append(gm_member->GetName());
@@ -434,7 +434,7 @@ void ChatLog::RaidMsg(Player *player, std::string &msg, uint32 type)
         {
             if (itr->guid == gm_leader_GUID) continue;
 
-            gm_member = sObjectMgrGetPlayer(itr->guid);
+            gm_member = sObjectMgr.GetPlayer(itr->guid);
             if (gm_member)
             {
                 log_str.append(itr->name);
