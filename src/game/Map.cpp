@@ -2521,7 +2521,7 @@ bool InstanceMap::Add(Player *player)
                     // set up a solo bind or continue using it
                     if(!playerBind)
                         player->BindToInstance(mapSave, false);
-                    else
+                        //else
                         // cannot jump to a different instance without resetting it
                         //assert(playerBind->save == mapSave);
                 }
