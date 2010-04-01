@@ -1786,7 +1786,13 @@ void Spell::SetTargetMap(SpellEffectIndex effIndex, uint32 targetMode, UnitList&
         case TARGET_ALL_RAID_AROUND_CASTER:
         {
             if(m_spellInfo->Id == 57669)                    // Replenishment (special target selection)
-                FillRaidOrPartyManaPriorityTargets(targetUnitMap, m_caster, m_caster, radius, 10, true, false, true);
+            {
+                // in arena, target should be only caster
+                if(m_caster->GetMap()->IsBattleArena())
+                    targetUnitMap.push_back(m_caster);
+                else
+                    FillRaidOrPartyManaPriorityTargets(targetUnitMap, m_caster, m_caster, radius, 10, true, false, true);
+            }
             else if (m_spellInfo->Id==52759)                // Ancestral Awakening (special target selection)
                 FillRaidOrPartyHealthPriorityTargets(targetUnitMap, m_caster, m_caster, radius, 1, true, false, true);
             else if (m_spellInfo->Id == 54171)              // Divine Storm (healing part) 
@@ -1990,9 +1996,15 @@ void Spell::SetTargetMap(SpellEffectIndex effIndex, uint32 targetMode, UnitList&
             if(m_spellInfo->Effect[effIndex] != SPELL_EFFECT_DUEL)
                 targetUnitMap.push_back(m_caster);
             break;
-        case TARGET_SINGLE_ENEMY:
+        case TARGET_PERIODIC_TRIGGER_AURA:
         {
-            if(Unit* pUnitTarget = m_caster->SelectMagnetTarget(m_targets.getUnitTarget(), m_spellInfo))
+            Unit* pTarget;
+            // search for dummy aura link, that contains the target
+            Aura* pAura = NULL;
+            if(m_triggeredByAuraSpell)
+                pAura = m_caster->GetLinkedDummyAura(m_triggeredByAuraSpell->Id);
+            pTarget = pAura ? pAura->GetTarget() : m_targets.getUnitTarget();
+            if(Unit* pUnitTarget = m_caster->SelectMagnetTarget(pTarget, m_spellInfo))
             {
                 m_targets.setUnitTarget(pUnitTarget);
                 targetUnitMap.push_back(pUnitTarget);
@@ -4880,9 +4892,13 @@ SpellCastResult Spell::CheckCast(bool strict)
             {
                 // Spell can be triggered, we need to check original caster prior to caster
                 Unit* caster = GetAffectiveCaster();
-                if (!caster || caster->GetTypeId() != TYPEID_PLAYER ||
-                    !m_targets.getUnitTarget() ||
-                    m_targets.getUnitTarget()->GetTypeId() == TYPEID_PLAYER)
+                if (!caster)
+                    return SPELL_FAILED_BAD_TARGETS;
+                // target provided by dummy aura
+                Aura* dummyLink = caster->GetLinkedDummyAura(m_triggeredByAuraSpell->Id);
+                if (caster->GetTypeId() != TYPEID_PLAYER ||
+                    !dummyLink || !dummyLink->GetTarget() ||
+                    dummyLink->GetTarget()->GetTypeId() == TYPEID_PLAYER)
                     return SPELL_FAILED_BAD_TARGETS;
 
                 Player* plrCaster = (Player*)caster;
@@ -4893,7 +4909,7 @@ SpellCastResult Spell::CheckCast(bool strict)
                     return SPELL_FAILED_DONT_REPORT;
                 }
 
-                Creature* target = (Creature*)m_targets.getUnitTarget();
+                Creature* target = (Creature*)dummyLink->GetTarget();
 
                 if(target->isPet() || target->isCharmed())
                 {
