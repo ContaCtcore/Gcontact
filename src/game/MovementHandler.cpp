@@ -309,6 +309,9 @@ void WorldSession::HandleMovementOpcodes( WorldPacket & recv_data )
     }
 
     /*----------------------*/
+  
+  if (!plMover)
+    return;
 
     /* process position-change */
     movementInfo.UpdateTime(getMSTime());
