@@ -5999,6 +5999,9 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                 // Siphon Life
                 case 63108:
                 {
+					// spell has SPELL_AURA_DUMMY and SPELL_AURA_ADD_MODIFIER (both are abled trigger...)
+                    if (triggeredByAura->GetModifier()->m_auraname != SPELL_AURA_DUMMY)
+                       break;
                     basepoints[0] = int32(damage * triggerAmount / 100);
                     triggered_spell_id = 63106;
                     break;
